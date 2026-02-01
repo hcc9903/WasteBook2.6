@@ -1,3 +1,4 @@
+
 name: Build Android APK
 
 on: [push, workflow_dispatch]
@@ -8,20 +9,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: set up JDK 17
+      # 关键修改：必须使用 JDK 8 才能兼容 5 年前的老项目
+      - name: set up JDK 8
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '8'
           distribution: 'temurin'
           cache: gradle
 
-      - name: Accept Android Licenses
-        run: yes | sdkmanager --licenses || true
+      - name: Fix permissions
+        run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: |
-          chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
+        # 使用 --no-daemon 模式，增加构建成功率
+        run: ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
         if: success()
